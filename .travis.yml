@@ -1,0 +1,27 @@
+dist: trusty
+sudo: required
+language: rust
+rust:
+ - stable
+cache:
+directories:
+- $HOME/.cargo
+
+before_script:
+- |
+  pip install 'travis-cargo<0.2' --user &&
+  export PATH=$HOME/.local/bin:/usr/local/bin:$PATH
+
+# Enforce that all new commits are signed off according to the DCO,
+# per CONTRIBUTING.md.
+#
+# We then build all the code, then test it.
+script:
+- |
+  if git log --grep "^signed-off-by: .\+@.\+" --regexp-ignore-case --invert-grep --no-merges | grep ^ ;
+  then echo '**One or more commits are not signed off!' ; /bin/false ; fi &&
+  cargo build &&
+  cargo test
+
+after_success:
+- travis-cargo coveralls --no-sudo
